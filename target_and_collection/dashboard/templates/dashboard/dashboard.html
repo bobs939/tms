@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Dashboard</h1>
+        <p>Welcome to your dashboard!</p>
+
+        <!-- Scoreboard Section -->
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">{{ total_departments }}</h5>
+                                <p class="card-text">Departments</p>
+                            </div>
+                            <i class="fas fa-building fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">{{ total_collections }}</h5>
+                                <p class="card-text">Collections</p>
+                            </div>
+                            <i class="fas fa-cubes fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">{{ total_subdepartments }}</h5>
+                                <p class="card-text">SubDepartments</p>
+                            </div>
+                            <i class="fas fa-sitemap fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">{{ total_targets }}</h5>
+                                <p class="card-text">Targets</p>
+                            </div>
+                            <i class="fas fa-bullseye fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">{{ total_rules }}</h5>
+                                <p class="card-text">Rules</p>
+                            </div>
+                            <i class="fas fa-gavel fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="row" id="chart-section">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">Collections by Department</div>
+                    <div class="card-body">
+                        <canvas id="collectionsByDepartmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">Targets by Department</div>
+                    <div class="card-body">
+                        <canvas id="targetsByDepartmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">Rules Status</div>
+                    <div class="card-body">
+                        <canvas id="rulesStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+    // Collections by Department Chart
+    const collectionsByDepartmentCtx = document.getElementById('collectionsByDepartmentChart').getContext('2d');
+    new Chart(collectionsByDepartmentCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ collections_labels|safe }},
+            datasets: [{
+                label: 'Collections',
+                data: {{ collections_data|safe }},
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Targets by Department Chart
+    const targetsByDepartmentCtx = document.getElementById('targetsByDepartmentChart').getContext('2d');
+    new Chart(targetsByDepartmentCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ targets_labels|safe }},
+            datasets: [{
+                label: 'Targets',
+                data: {{ targets_data|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Rules Status Chart
+    const rulesStatusCtx = document.getElementById('rulesStatusChart').getContext('2d');
+    new Chart(rulesStatusCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ rules_labels|safe }},
+            datasets: [{
+                label: 'Rules Status',
+                data: {{ rules_data|safe }},
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 99, 132, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Rules Status'
+                }
+            }
+        }
+    });
+
+    // Initialize SortableJS for the chart section
+    var chartSection = document.getElementById('chart-section');
+    if (chartSection) {
+        new Sortable(chartSection, {
+            animation: 150,
+            ghostClass: 'sortable-ghost'
+        });
+    }
+</script>
+{% endblock %}

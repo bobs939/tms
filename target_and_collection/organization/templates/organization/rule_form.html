@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Edit Rule
+    {% else %}
+        Create Rule
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">
+        {% if form.instance.pk %}
+            Edit Rule
+        {% else %}
+            Create Rule
+        {% endif %}
+    </h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <h3>Conditions</h3>
+        <div id="condition-formset-container">
+            {{ condition_formset.management_form }}
+            {% for form in condition_formset %}
+                <div class="condition-formset-row mb-3 p-3 border rounded">
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" id="add-condition" class="btn btn-secondary mb-3">Add Condition</button>
+
+        <h3>Rule Targets</h3>
+        <div id="ruletarget-formset-container">
+            {{ rule_target_formset.management_form }}
+            {% for form in rule_target_formset %}
+                <div class="ruletarget-formset-row mb-3 p-3 border rounded">
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" id="add-ruletarget" class="btn btn-secondary mb-3">Add Rule Target</button>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{% url 'organization:rule_list' %}" class="btn btn-danger">Cancel</a>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateFieldChoices(modelSelect, fieldSelect) {
+                const modelName = modelSelect.value;
+                console.log('Selected modelName:', modelName); // Debugging line
+                if (modelName) {
+                    fetch(`/organization/api/get_model_fields/?model_name=${modelName}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            fieldSelect.innerHTML = ''; // Clear existing options
+                            data.forEach(field => {
+                                const option = document.createElement('option');
+                                option.value = field.name;
+                                option.textContent = field.verbose_name;
+                                fieldSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching model fields:', error));
+                } else {
+                    fieldSelect.innerHTML = '<option value="">---------</option>'; // Add a default option
+                }
+            }
+
+            document.querySelectorAll('.ruletarget-formset-row').forEach(row => {
+                const modelSelect = row.querySelector('.model-select');
+                const fieldSelect = row.querySelector('.field-select');
+                if (modelSelect && fieldSelect) {
+                    // Initial load
+                    updateFieldChoices(modelSelect, fieldSelect);
+
+                    // Event listener for change
+                    modelSelect.addEventListener('change', function() {
+                        updateFieldChoices(this, fieldSelect);
+                    });
+                }
+            });
+
+            // Add formset row functionality (simplified for brevity, assuming you have this)
+            const addRuleTargetButton = document.getElementById('add-ruletarget');
+            const ruleTargetFormsetContainer = document.getElementById('ruletarget-formset-container');
+            let ruleTargetFormCount = ruleTargetFormsetContainer.querySelectorAll('.ruletarget-formset-row').length;
+
+            addRuleTargetButton.addEventListener('click', function() {
+                const emptyForm = ruleTargetFormsetContainer.querySelector('.ruletarget-formset-row').cloneNode(true);
+                emptyForm.innerHTML = emptyForm.innerHTML.replace(/__prefix__/g, ruleTargetFormCount);
+                ruleTargetFormsetContainer.appendChild(emptyForm);
+                ruleTargetFormCount++;
+                document.getElementById('id_rule_target_set-TOTAL_FORMS').value = ruleTargetFormCount;
+
+                const newModelSelect = emptyForm.querySelector('.model-select');
+                const newFieldSelect = emptyForm.querySelector('.field-select');
+                if (newModelSelect && newFieldSelect) {
+                    newModelSelect.addEventListener('change', function() {
+                        updateFieldChoices(this, newFieldSelect);
+                    });
+                    updateFieldChoices(newModelSelect, newFieldSelect); // Initialize new row
+                }
+            });
+        });
+    </script>
+{% endblock %}

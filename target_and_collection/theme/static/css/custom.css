@@ -1,0 +1,44 @@
+:root {
+    --primary: #172d48;
+    --secondary: #B38247;
+    --info: #106BDA;
+    --warning: #FFC107;
+    --danger: #CE3426;
+    --success: #157F40;
+    --neutral-1: #767676;
+    --neutral-2: #444444;
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--white);
+    color: var(--neutral-2);
+}
+
+.navbar {
+    background-color: var(--primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-success {
+    background-color: var(--success);
+    border-color: var(--success);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+
+.text-muted {
+    color: var(--neutral-2) !important;
+}
+
+table.table thead th {
+    background-color: var(--primary) !important;
+    color: var(--white) !important;
+}

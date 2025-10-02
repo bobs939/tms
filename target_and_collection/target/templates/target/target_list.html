@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Targets{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-4">Targets</h1>
+    <a href="{% url 'target:target_create' %}" class="btn btn-primary">Add New Target</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Department</th>
+                <th>SubDepartment</th>
+                <th>Value</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for target in targets %}
+            <tr>
+                <td>{{ target.name }}</td>
+                <td>{{ target.description }}</td>
+                <td>{{ target.department.name }}</td>
+                <td>{{ target.sub_department.name }}</td>
+                <td>{{ target.value }}</td>
+                <td>
+                    <a href="{% url 'target:target_update' target.pk %}" class="btn btn-success btn-sm">Edit</a>
+                    <a href="{% url 'target:target_delete' target.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No targets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
